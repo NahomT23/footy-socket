@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Generated artefacts (never linted): local caches, coverage, test output.
+    ".cache/**",
+    "coverage/**",
+    "node_modules/**",
   ]),
 ]);
 

@@ -1,28 +1,68 @@
 {
-  "name": "sport-dashboard",
-  "version": "0.1.0",
+  "name": "sportz",
+  "version": "1.0.0",
   "private": true,
+  "description": "Sportz \u2014 real-time live sports scores and play-by-play commentary (Next.js 16 + Socket.IO + Prisma)",
+  "engines": {
+    "node": ">=20.9"
+  },
   "scripts": {
     "dev": "node server.mjs",
+    "predev": "node scripts/ensure-db.mjs",
     "build": "next build",
     "start": "NODE_ENV=production node server.mjs",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "next typegen && tsc --noEmit",
+    "verify": "npm run typecheck && npm run lint && npm run check:contract && npm run test",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:unit": "vitest run tests/unit",
+    "test:integration": "vitest run tests/integration",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "bash scripts/playwright.sh test",
+    "test:e2e:ui": "bash scripts/playwright.sh test --ui",
+    "test:e2e:install": "bash scripts/playwright.sh install chromium",
+    "check:contract": "tsx scripts/check-contract.mjs",
+    "fixtures:build": "tsx scripts/build-fixtures.ts",
+    "seed": "tsx scripts/seed.mjs",
+    "db:start": "pg_ctl -D ${PGDATA:-./.pgdata} -o \"-p ${PGPORT:-5433} -k /tmp\" -l ${PGDATA:-./.pgdata}/server.log start",
+    "db:stop": "pg_ctl -D ${PGDATA:-./.pgdata} stop",
+    "db:status": "pg_isready -h 127.0.0.1 -p ${PGPORT:-5433}",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:generate": "prisma generate",
+    "db:studio": "prisma studio",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@prisma/client": "^6.19.3",
     "next": "16.4.1",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "socket.io": "^4.8.4",
-    "socket.io-client": "^4.8.4"
+    "socket.io-client": "^4.8.4",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "@tailwindcss/turbopack": "^4",
-    "@types/node": "^20",
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.8",
+    "@types/node": "^24.19.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^6.1.2",
+    "@vitest/coverage-v8": "^5.0.5",
     "eslint": "^9",
     "eslint-config-next": "16.4.1",
+    "jsdom": "^30.1.3",
+    "prisma": "^6.19.3",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "tsx": "^4.23.15",
+    "typescript": "^5",
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^5.0.5"
   }
 }

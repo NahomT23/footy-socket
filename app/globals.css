@@ -1,26 +1,191 @@
 @import "tailwindcss";
 
+/* ------------------------------------------------------------------ */
+/* Sportz design tokens — neo-brutalism                                */
+/* ------------------------------------------------------------------ */
+
+@theme {
+  /* Palette from the product spec. */
+  --color-accent: #fde047; /* Accent Yellow  */
+  --color-soft: #bae6fd; /* Soft Blue      */
+  --color-ink: #18181b; /* Dark Charcoal  */
+  --color-canvas: #fafafa; /* Neutral Card Gray */
+  --color-danger: #ef4444;
+  --color-success: #22c55e;
+  --color-warn: #f59e0b;
+
+  /* Hard, offset shadows with zero blur are the signature of the style. */
+  --shadow-brutal: 4px 4px 0px 0px #18181b;
+  --shadow-brutal-sm: 2px 2px 0px 0px #18181b;
+  --shadow-brutal-lg: 6px 6px 0px 0px #18181b;
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+/* ------------------------------------------------------------------ */
+/* Base                                                                */
+/* ------------------------------------------------------------------ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  color-scheme: light;
+  --background: var(--color-canvas);
+  --foreground: var(--color-ink);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
+  /* Subtle grid keeps large empty areas from looking flat. */
+  background-image:
+    linear-gradient(to right, rgba(24, 24, 27, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(24, 24, 27, 0.06) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* Keyboard users must always see where they are, even on a busy grid. */
+:focus-visible {
+  outline: 3px solid var(--color-ink);
+  outline-offset: 2px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Component utilities                                                 */
+/* ------------------------------------------------------------------ */
+
+@utility brutal {
+  border: 2px solid var(--color-ink);
+  box-shadow: var(--shadow-brutal);
+}
+
+@utility brutal-sm {
+  border: 2px solid var(--color-ink);
+  box-shadow: var(--shadow-brutal-sm);
+}
+
+/* Lift on hover: the shadow grows, the card moves toward the light. */
+@utility brutal-interactive {
+  border: 2px solid var(--color-ink);
+  box-shadow: var(--shadow-brutal);
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease,
+    background-color 120ms ease;
+}
+
+@utility brutal-press {
+  &:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: var(--shadow-brutal-lg);
+  }
+
+  &:active {
+    transform: translate(2px, 2px);
+    box-shadow: var(--shadow-brutal-sm);
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Animations                                                          */
+/* ------------------------------------------------------------------ */
+
+/* Score changed: flash the box, then settle. */
+@keyframes score-pulse {
+  0% {
+    background-color: var(--color-accent);
+    transform: scale(1.14);
+  }
+  60% {
+    background-color: var(--color-accent);
+    transform: scale(1.04);
+  }
+  100% {
+    background-color: transparent;
+    transform: scale(1);
+  }
+}
+
+@utility score-pulse {
+  animation: score-pulse 1.1s ease-out;
+}
+
+/* Live badge beacon. */
+@keyframes live-beacon {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(0.78);
+  }
+}
+
+@utility live-beacon {
+  animation: live-beacon 1.2s ease-in-out infinite;
+}
+
+/* New commentary arrives: slide in from the left. */
+@keyframes feed-enter {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@utility feed-enter {
+  animation: feed-enter 320ms ease-out;
+}
+
+/* Toast banner for newly scheduled matches. */
+@keyframes toast-enter {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@utility toast-enter {
+  animation: toast-enter 220ms ease-out;
+}
+
+/* Skeleton shimmer for loading states. */
+@keyframes skeleton-sweep {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@utility skeleton {
+  background-image: linear-gradient(
+    90deg,
+    rgba(24, 24, 27, 0.08) 0%,
+    rgba(24, 24, 27, 0.18) 50%,
+    rgba(24, 24, 27, 0.08) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-sweep 1.4s linear infinite;
+}
+
+/* Respect users who asked the OS for less motion. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

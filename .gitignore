@@ -1,6 +1,4 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
+# Dependencies
 /node_modules
 /.pnp
 .pnp.*
@@ -10,32 +8,106 @@
 !.yarn/releases
 !.yarn/versions
 
-# testing
-/coverage
-
-# next.js
+# Next.js & Build Outputs
 /.next/
 /out/
-
-# production
 /build
+/dist
+.turbo/
 
-# misc
-.DS_Store
+# Local development services & caches (never commit database clusters)
+/.pgdata/
+/.cache/
+
+# Environment Variables & Secrets (Prevent accidental leaks)
+.env
+.env*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+*.env
+*.env.*
+*.env.local
+
+# Whitelist safe example/template environment files for the team/repo
+!.env.example
+!.env*.example
+!.env.sample
+!.env*.sample
+!.env.template
+!.env*.template
+
+# The test environment is a committed template, not a secret: it points at a
+# throwaway `sportz_test` database and is required by `npm test`.
+!.env.test
+
+# Credentials, Keys, and Certificates
 *.pem
+*.key
+*.cert
+*.crt
+*.pfx
+*.p12
+*.cer
+*.der
+credentials.json
+client_secret*.json
+*service-account*.json
+*firebase-adminsdk*.json
+.env.vault
+*.secret
+*.secrets
+id_rsa*
+id_ed25519*
 
-# debug
+# Package Manager Auth Tokens (prevents leaking registry credentials)
+.npmrc
+.yarnrc
+
+# Testing & Coverage
+/coverage
+.nyc_output
+
+# Debug & Logs
+*.log
+logs/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 .pnpm-debug.log*
+lerna-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
-
-# vercel
+# Vercel
 .vercel
 
-# typescript
+# TypeScript
 *.tsbuildinfo
 next-env.d.ts
+
+# Operating System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Thumbs.db:encryptable
+Desktop.ini
+$RECYCLE.BIN/
+
+# IDEs and Editors
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~

@@ -1,0 +1,103 @@
+// Sportz — Prisma schema
+// Unified data layer for the real-time live sports platform.
+// Docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Lifecycle of a single fixture: scheduled -> live -> finished.
+enum MatchStatus {
+  scheduled
+  live
+  finished
+}
+
+/// A single fixture between two teams for one sport.
+model Match {
+  id        Int         @id @default(autoincrement())
+  sport     String
+  homeTeam  String      @map("home_team")
+  awayTeam  String      @map("away_team")
+  status    MatchStatus @default(scheduled)
+  startTime DateTime    @map("start_time")
+  endTime   DateTime    @map("end_time")
+  homeScore Int         @default(0) @map("home_score")
+  awayScore Int         @default(0) @map("away_score")
+
+  /// Where this row came from. "sim" rows are authored by the built-in
+  /// simulator (`npm run seed`); provider rows stream from a public data
+  /// source such as ESPN. The status of sim rows is *derived* from the time
+  /// window (lib/match-status.ts); provider rows trust the provider's own
+  /// lifecycle, because real fixtures have no scripted `endTime`.
+  providerKey String  @default("sim") @map("provider_key")
+  /// The provider's stable fixture id, unique within a provider. Provider
+  /// sources dedupe on (providerKey, externalId); sim rows leave this null.
+  externalId  String?
+
+  /// Competition the fixture belongs to ("English Premier League", "NBA").
+  competition String?
+
+  /// Cricket only: wickets lost. A cricket score is meaningless without them
+  /// (`170/4` is a very different match from `170/0`), so they are first-class
+  /// rather than buried in commentary metadata. Always 0 for other sports.
+  homeWickets Int @default(0) @map("home_wickets")
+  awayWickets Int @default(0) @map("away_wickets")
+
+  /// Cricket only: how many innings each side has completed, so a two-innings
+  /// match (e.g. a Test) can be told apart from a single-innings white-ball game.
+  homeInnings Int @default(0) @map("home_innings")
+  awayInnings Int @default(0) @map("away_innings")
+
+  /// Cricket only: completed overs, stored as text because the unit is
+  /// `overs.balls` (e.g. `"33.1"`), not a decimal. Null until the side bats.
+  homeOvers String? @map("home_overs")
+  awayOvers String? @map("away_overs")
+
+  /// Final outcome, set when a fixture concludes ("India won by 169 runs").
+  /// Cricket needs this stored rather than inferred: a two-innings match
+  /// aggregates runs from different innings, so comparing the two sides'
+  /// totals to work out a winner is simply wrong.
+  result String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  commentaries Commentary[]
+
+  // Dashboard is always "newest fixture first", and status is derived from the
+  // time window, so these two indexes cover the hot read path.
+  @@index([createdAt(sort: Desc)])
+  @@index([status, startTime])
+  // Provider ingestion is idempotent per (provider, external fixture id).
+  @@unique([providerKey, externalId])
+  @@map("matches")
+}
+
+/// One play-by-play entry attached to a fixture.
+model Commentary {
+  id        Int      @id @default(autoincrement())
+  matchId   Int      @map("match_id")
+  minute    Int?
+  sequence  Int?
+  period    String?
+  eventType String?  @map("event_type")
+  actor     String?
+  team      String?
+  message   String
+  metadata  Json?
+  tags      String[]
+  createdAt DateTime @default(now()) @map("created_at")
+
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  // Matches the feed query: newest commentary for one fixture, newest first.
+  @@index([matchId, createdAt(sort: Desc)])
+  // Guards against duplicate/out-of-order replays from the simulator.
+  @@unique([matchId, sequence])
+  @@map("commentary")
+}
